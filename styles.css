@@ -1,0 +1,15 @@
+/* Backs up the dir attribute in case another extension's line attributes win. */
+.markdown-source-view.mod-cm6 .cm-line.smart-rtl-rtl {
+  direction: rtl;
+}
+
+.markdown-source-view.mod-cm6 .cm-line.smart-rtl-ltr {
+  direction: ltr;
+}
+
+.smart-rtl-threshold-value {
+  min-width: 3em;
+  text-align: end;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
