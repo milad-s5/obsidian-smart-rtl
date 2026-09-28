@@ -1,0 +1,14 @@
+{
+  "id": "smart-rtl",
+  "name": "Smart RTL",
+  "version": "1.0.0",
+  "minAppVersion": "1.7.2",
+  "description": "Sets each line's text direction from the majority of its words, so a Persian, Arabic or Hebrew line that starts with an English word still reads right-to-left.",
+  "author": "Milad Samimifar",
+  "authorUrl": "https://github.com/milad-s5",
+  "fundingUrl": {
+    "Buy Me a Coffee": "https://www.coffeete.ir/milads55",
+    "Buy Me a BitCoffee": "https://buymeabitcoffee.vercel.app/btc/bc1qwxju09p2wywqqq8udj2am8csvn6r4p4z6720q3"
+  },
+  "isDesktopOnly": false
+}

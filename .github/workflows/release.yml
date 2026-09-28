@@ -1,0 +1,72 @@
+name: Release Obsidian Plugin
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Verify manifest version matches tag
+        run: |
+          MANIFEST_VERSION=$(jq -r '.version' manifest.json)
+          TAG_VERSION=${{ steps.version.outputs.VERSION }}
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "manifest.json version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
+          echo "Version match: $MANIFEST_VERSION"
+
+      # Obsidian falls back to versions.json to find the newest build a given
+      # app version can run. An entry missing here is invisible until someone
+      # on an older Obsidian gets offered a plugin that will not load.
+      - name: Verify versions.json has an entry for this release
+        run: |
+          TAG_VERSION=${{ steps.version.outputs.VERSION }}
+          if ! jq -e --arg v "$TAG_VERSION" 'has($v)' versions.json > /dev/null; then
+            echo "versions.json has no entry for $TAG_VERSION"
+            exit 1
+          fi
+          echo "versions.json maps $TAG_VERSION to $(jq -r --arg v "$TAG_VERSION" '.[$v]' versions.json)"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # main.js is a build artifact and is gitignored, so it does not exist in a
+      # fresh checkout. Without this step the release would publish with the
+      # manifest alone and the plugin would simply fail to install.
+      - name: Build
+        run: npm run build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: ${{ steps.version.outputs.VERSION }}
+          files: |
+            main.js
+            manifest.json
+            styles.css
+          # Failing on a missing file is the point: a silently empty release is
+          # worse than a failed build.
+          fail_on_unmatched_files: true
+          generate_release_notes: true
