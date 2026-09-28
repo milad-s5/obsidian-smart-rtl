@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test
+        run: npm test
+
       # main.js is a build artifact and is gitignored, so it does not exist in a
       # fresh checkout. Without this step the release would publish with the
       # manifest alone and the plugin would simply fail to install.
