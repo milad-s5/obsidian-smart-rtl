@@ -1,6 +1,6 @@
 {
   "name": "obsidian-smart-rtl",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Per-line text direction for Obsidian, decided by the majority of words rather than the first letter",
   "main": "main.js",
   "scripts": {
