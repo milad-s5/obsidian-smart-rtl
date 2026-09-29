@@ -20,6 +20,13 @@ export function detectDirection(text: string, threshold: number): Direction | nu
   return rtl >= (threshold / 100) * (rtl + ltr) ? "rtl" : "ltr";
 }
 
+/** Direction of the first letter, which is how Obsidian decides it; "auto" without one. */
+export function firstLetterDirection(text: string): Direction | "auto" {
+  const letter = LETTER_RE.exec(text)?.[0];
+  if (!letter) return "auto";
+  return RTL_LETTER_RE.test(letter) ? "rtl" : "ltr";
+}
+
 /** Drops the parts of a Markdown line that are not read as prose. */
 export function stripMarkdown(text: string): string {
   return text

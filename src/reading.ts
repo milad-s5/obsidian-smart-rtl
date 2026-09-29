@@ -24,7 +24,7 @@ const SKIP_SELECTOR = [
 const URL_TEXT_RE = /^[a-z][\w+.-]*:\/\//i;
 
 /** Visible prose of an element, without nested lists, code, math or bare URLs. */
-function renderedText(el: Element): string {
+export function renderedText(el: Element): string {
   let text = "";
   el.childNodes.forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE) {

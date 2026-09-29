@@ -4,6 +4,7 @@ import { editorExtension, refreshEffect } from "./editor";
 import { isExcluded, renameFolder } from "./exclude";
 import { applyReadingDirection } from "./reading";
 import { DEFAULT_SETTINGS, SmartRtlSettings, SmartRtlSettingTab } from "./settings";
+import { applyTableCellDirection, refreshTableDirections } from "./table";
 
 export default class SmartRtlPlugin extends Plugin {
   settings: SmartRtlSettings;
@@ -18,7 +19,9 @@ export default class SmartRtlPlugin extends Plugin {
     // Sort order 100 runs after Obsidian's own processor, which sets dir from
     // the first letter of each block.
     this.registerMarkdownPostProcessor((el, ctx) => {
-      if (this.isActiveFor(ctx.sourcePath)) applyReadingDirection(el, this.settings.threshold);
+      if (!this.isActiveFor(ctx.sourcePath)) return;
+      if (el.hasClass("table-cell-wrapper")) applyTableCellDirection(el, this.settings.threshold);
+      else applyReadingDirection(el, this.settings.threshold);
     }, 100);
 
     this.registerEvent(
@@ -95,6 +98,8 @@ export default class SmartRtlPlugin extends Plugin {
       // Not in the public typings, but it is the note's CodeMirror EditorView.
       const cm = (view.editor as unknown as { cm?: EditorView }).cm;
       cm?.dispatch({ effects: refreshEffect.of(null) });
+      // Live Preview tables are not redrawn by the editor refresh.
+      refreshTableDirections(view.contentEl, this.isActiveFor(view.file?.path) ? this.settings.threshold : null);
       view.previewMode.rerender(true);
     });
   }

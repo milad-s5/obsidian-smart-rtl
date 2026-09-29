@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { detectDirection, stripMarkdown } from "../src/detect";
+import { detectDirection, firstLetterDirection, stripMarkdown } from "../src/detect";
 import { LOOKBACK, lineDirections } from "../src/lines";
 
 const T = 40;
@@ -95,4 +95,10 @@ test("a range far down the note still knows it is inside a code block", () => {
 test("a blank first line of the range inherits from above it", () => {
   const d = doc("متن فارسی\n\n\nEnglish");
   assert.deepEqual(lineDirections(d, 2, 4, T), ["rtl", "rtl", "ltr"]);
+});
+
+test("the first-letter direction is Obsidian's, from the first letter only", () => {
+  assert.equal(firstLetterDirection("assertهای هر تست"), "ltr");
+  assert.equal(firstLetterDirection("  (۱۲) کی می‌نویسه"), "rtl");
+  assert.equal(firstLetterDirection("123 / —"), "auto");
 });
