@@ -13,3 +13,7 @@
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+.smart-rtl-excluded-folders .setting-item {
+  padding-inline-start: var(--size-4-4);
+}

@@ -1,5 +1,6 @@
 import { Extension, Prec, RangeSetBuilder, StateEffect } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import { editorInfoField } from "obsidian";
 import { lineDirections } from "./lines";
 import { SmartRtlSettings } from "./settings";
 
@@ -24,10 +25,13 @@ function buildDecorations(view: EditorView, threshold: number): DecorationSet {
   return builder.finish();
 }
 
-export function editorExtension(getSettings: () => SmartRtlSettings): Extension {
+export function editorExtension(
+  getSettings: () => SmartRtlSettings,
+  isActiveFor: (path: string | undefined) => boolean
+): Extension {
   const compute = (view: EditorView) => {
-    const { enabled, threshold } = getSettings();
-    return enabled ? buildDecorations(view, threshold) : Decoration.none;
+    const path = view.state.field(editorInfoField, false)?.file?.path;
+    return isActiveFor(path) ? buildDecorations(view, getSettings().threshold) : Decoration.none;
   };
 
   const plugin = ViewPlugin.fromClass(

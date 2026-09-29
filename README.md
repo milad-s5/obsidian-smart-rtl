@@ -31,6 +31,7 @@ It works with any right-to-left script: Persian, Arabic, Urdu, Hebrew, Syriac, T
 
 - **Enabled.** Turns the plugin on and off without disabling it. When it's off, Obsidian's usual first-letter behaviour comes back.
 - **RTL threshold.** The share of RTL words at which a line becomes right-to-left (10–90%, default 40%). Lower it if lines with many English terms should still be RTL. Raise it if English lines with a few Persian words are flipping.
+- **Excluded folders.** Notes in these folders, and in their subfolders, are left to Obsidian's usual first-letter behaviour. Start typing a folder's name and pick it from the suggestions. If you rename or move an excluded folder, the list follows it.
 
 ## Commands
 

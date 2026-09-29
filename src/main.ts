@@ -1,6 +1,7 @@
-import { MarkdownView, Notice, Plugin, debounce } from "obsidian";
+import { MarkdownView, Notice, Plugin, TAbstractFile, TFolder, debounce } from "obsidian";
 import type { EditorView } from "@codemirror/view";
 import { editorExtension, refreshEffect } from "./editor";
+import { isExcluded, renameFolder } from "./exclude";
 import { applyReadingDirection } from "./reading";
 import { DEFAULT_SETTINGS, SmartRtlSettings, SmartRtlSettingTab } from "./settings";
 
@@ -12,13 +13,28 @@ export default class SmartRtlPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    this.registerEditorExtension(editorExtension(() => this.settings));
+    this.registerEditorExtension(editorExtension(() => this.settings, (path) => this.isActiveFor(path)));
 
     // Sort order 100 runs after Obsidian's own processor, which sets dir from
     // the first letter of each block.
-    this.registerMarkdownPostProcessor((el) => {
-      if (this.settings.enabled) applyReadingDirection(el, this.settings.threshold);
+    this.registerMarkdownPostProcessor((el, ctx) => {
+      if (this.isActiveFor(ctx.sourcePath)) applyReadingDirection(el, this.settings.threshold);
     }, 100);
+
+    this.registerEvent(
+      this.app.vault.on("rename", (file: TAbstractFile, oldPath: string) => {
+        const folders = this.settings.excludedFolders;
+        if (file instanceof TFolder) {
+          // Keep an excluded folder in the list when it is renamed or moved.
+          const renamed = renameFolder(folders, oldPath, file.path);
+          if (renamed !== folders) return this.setExcludedFolders(renamed);
+        }
+        // A note or folder moved into or out of an excluded folder changes
+        // whether the plugin applies to its notes.
+        const within = (path: string) => isExcluded(file instanceof TFolder ? path + "/" : path, folders);
+        if (within(file.path) !== within(oldPath)) this.refreshSoon();
+      })
+    );
 
     this.addCommand({
       id: "toggle",
@@ -53,6 +69,17 @@ export default class SmartRtlPlugin extends Plugin {
     this.settings.enabled = enabled;
     await this.saveSettings();
     this.refreshViews();
+  }
+
+  /** Whether the plugin sets directions in the note at `path`. */
+  isActiveFor(path: string | undefined): boolean {
+    return this.settings.enabled && !(path && isExcluded(path, this.settings.excludedFolders));
+  }
+
+  async setExcludedFolders(folders: string[]) {
+    this.settings.excludedFolders = folders;
+    await this.saveSettings();
+    this.refreshSoon();
   }
 
   async setThreshold(threshold: number) {
